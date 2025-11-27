@@ -1,25 +1,54 @@
-import { useState } from "react";
-import { createPost } from "../services/postService";
-export default function PostForm({ posts, setPosts }) {
+import { useEffect, useState } from "react";
+import { createPost, updatePost } from "../services/postService";
+export default function PostForm({ posts, setPosts, editingPost, setEditingPost }) {
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
+
+    useEffect(() => {
+        if (editingPost) {
+            setTitle(editingPost.title);
+            setBody(editingPost.body);
+        } else {
+            setTitle('');
+            setBody('');
+        }
+    }, [editingPost]);
 
     const handleSubmit = (e) => {
         e.preventDefault();// prevent page reload
         const newPost = { title, body };
 
-        createPost(newPost)
-            .then((response) => {
-                console.log(response);
-                response.data.id = posts.length + 1; // fake id for demo purpose
-                setPosts([response.data, ...posts]);
-                setTitle('');
-                setBody('');
+        if (editingPost) {
+            // Update existing post
+            updatePost(editingPost.id, newPost)
+                .then((response) => {
+                    console.log(response);
+                    setPosts(posts.map((post) => (post.id === editingPost.id ? response.data : post)));
+                    setEditingPost(null);
+                    setTitle('');
+                    setBody('');
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+            return;
+        } else {
+            // Create new post       
 
-            })
-            .catch((error) => {
-                console.error(error);
-            })
+            createPost(newPost)
+                .then((response) => {
+                    console.log(response);
+                    response.data.id = posts.length + 1; // fake id for demo purpose
+                    setPosts([response.data, ...posts]);
+                    setTitle('');
+                    setBody('');
+
+                })
+                .catch((error) => {
+                    console.error(error);
+                })
+
+        }
 
 
     }
@@ -36,7 +65,7 @@ export default function PostForm({ posts, setPosts }) {
                 <textarea value={body} onChange={(e) => setBody(e.target.value)}></textarea>
             </div>
             <div>
-                <button type="submit" >Add Post</button>
+                <button type="submit" >{editingPost ? "Edit Post" : "Add Post"}</button>
             </div>
         </form>
 

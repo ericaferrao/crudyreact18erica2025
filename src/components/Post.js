@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { deltePost, getPosts } from "../services/postService";
+import PostForm from "./PostForm";
 
 export default function Post() {
     const [posts, setPosts] = useState();
@@ -31,6 +32,7 @@ export default function Post() {
 
     return (<>
         <h1>Posts</h1>
+        <PostForm posts={posts} setPosts={setPosts} />
         {!posts && <h2>Loading...</h2>}
         {posts && posts.map((post) => (
             <div key={post.id} style={{ border: '1px solid gray', marginBottom: '10px', padding: '10px' }}>
